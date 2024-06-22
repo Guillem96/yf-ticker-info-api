@@ -12,17 +12,23 @@ T = TypeVar("T")
 def cache_to_file(
     base_dir: Union[str, Path] = ".",
     ttl: Optional[int] = None,
+    *,
+    disable: bool = False,
 ) -> Callable[[Callable[..., T]], Callable[..., T]]:
     base_dir = Path(base_dir)
-    base_dir.mkdir(exist_ok=True, parents=True)
 
     def decorator(func: Callable[..., T]) -> Callable[..., T]:
+        if disable:
+            return func
+
         def generate_cache_key(*args, **kwargs) -> str:
             key = (func.__name__, args, frozenset(kwargs.items()))
             return hashlib.md5(pickle.dumps(key)).hexdigest()  # noqa: S324
 
         @functools.wraps(func)
         def wrapper(*args, **kwargs) -> Any:
+            base_dir.mkdir(exist_ok=True, parents=True)
+
             # Generate the cache file path
             cache_key = generate_cache_key(*args, **kwargs)
             cache_file = base_dir / f"{cache_key}.pkl"
@@ -30,6 +36,9 @@ def cache_to_file(
             # Check if the cache file exists and if it is still valid
             if cache_file.exists():
                 time_, cached = pickle.loads(cache_file.read_bytes())  # noqa: S301
+                if ttl is None:
+                    return cached
+
                 if time.time() - time_ < ttl:
                     return cached
 

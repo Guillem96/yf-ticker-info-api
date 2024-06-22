@@ -14,6 +14,7 @@ from ticker_info import utils
 
 class Settings(pydantic_settings.BaseSettings):
     cache_dir: Path = Path(".cache")
+    cache_disabled: bool = False
 
 
 class TickerInfo(pydantic.BaseModel):
@@ -23,6 +24,7 @@ class TickerInfo(pydantic.BaseModel):
     ex_dividend_date: datetime.date
     earning_dates: list[datetime.datetime]
     sector: str
+    country: str
 
 
 class TickerNotFoundError(Exception):
@@ -50,6 +52,7 @@ async def ticker_not_found_err_handler(
 @utils.cache_to_file(
     base_dir=settings.cache_dir,
     ttl=60 * 60 * 24,  # Day in seconds
+    disable=settings.cache_disabled,
 )
 def _get_ticker_info(ticker: str) -> TickerInfo:
     yf_ticker = yf.Ticker(ticker)
@@ -65,5 +68,6 @@ def _get_ticker_info(ticker: str) -> TickerInfo:
         currency=info["currency"],
         sector=info["sectorDisp"],
         earning_dates=calendar["Earnings Date"],
+        country=info["country"],
         ex_dividend_date=datetime.date.fromtimestamp(info["exDividendDate"]),  # noqa: DTZ012
     )
