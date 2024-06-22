@@ -1,0 +1,33 @@
+service: ticker-info-api
+
+provider:
+  name: aws
+  runtime: python3.9
+  region: eu-west-2
+  versionFunctions: false
+
+plugins:
+  - serverless-python-requirements
+
+custom:
+  pythonRequirements:
+    dockerizePip: true
+    layer: true
+
+package:
+  patterns:
+    - ../../ticker_info/**
+    - "!node_modules"
+
+functions:
+  tickerInfo:
+    handler: handler.handler
+    url:
+      cors:
+        allowedMethods: [GET]
+        allowedOrigins: [https://guillem96.github.io]
+    timeout: 2
+    environment:
+      CACHE_DIR: /tmp
+    layers:
+      - Ref: PythonRequirementsLambdaLayer

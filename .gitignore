@@ -1,0 +1,6 @@
+.vscode/
+.cache/
+.venv/
+__pycache__/
+test.http
+.DS_Store

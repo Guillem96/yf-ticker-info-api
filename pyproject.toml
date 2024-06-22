@@ -1,0 +1,97 @@
+[tool.poetry]
+version = "0.1.0"
+name = "ticker-info-api"
+description = "Get basic information about a company"
+readme = "README.md"
+license = "MIT"
+keywords = []
+authors = ["Guillem Orellana Trullols <guillem.orellana@gmail.com>"]
+classifiers = [
+  "Development Status :: 4 - Beta",
+  "Programming Language :: Python",
+  "Programming Language :: Python :: 3.11",
+]
+
+[build-system]
+requires = ["poetry>=0.12"]
+build-backend = "poetry.masonry.api"
+
+[tool.poetry.dependencies]
+python = ">=3.9,<4.0"
+fastapi = "*"
+pydantic = "*"
+pydantic-settings = "*"
+yfinance = "^0.2.40"
+
+[tool.poetry.group.dev]
+optional = true
+
+[tool.poetry.group.dev.dependencies]
+ruff = "*"
+mypy = "*"
+ipykernel = "^6.29.4"
+
+[tool.poetry.group.lambda]
+optional = true
+
+[tool.poetry.group.lambda.dependencies]
+mangum = "*"
+
+
+[tool.poetry.group.notebook.dependencies]
+ipykernel = "^6.29.4"
+
+[tool.black]
+target-version = ["py39"]
+line-length = 80
+skip-string-normalization = true
+
+[tool.ruff]
+target-version = "py39"
+line-length = 80
+select = [
+  "A",
+  "ARG",
+  "B",
+  "C",
+  "DTZ",
+  "E",
+  "EM",
+  "F",
+  "FBT",
+  "I",
+  "ICN",
+  "ISC",
+  "N",
+  "PLC",
+  "PLE",
+  "PLR",
+  "PLW",
+  "Q",
+  "RUF",
+  "S",
+  "T",
+  "TID",
+  "UP",
+  "W",
+  "YTT",
+]
+ignore = [
+  # Allow non-abstract empty methods in abstract base classes
+  "B027",
+  # Allow boolean positional values in function calls, like `dict.get(... True)`
+  "FBT003",
+  "F401",
+]
+unfixable = []
+ignore-init-module-imports = true
+
+[tool.ruff.isort]
+known-first-party = ["ticker_info"]
+
+[tool.ruff.flake8-tidy-imports]
+ban-relative-imports = "all"
+
+[tool.ruff.per-file-ignores]
+# Tests can use magic values, assertions, and relative imports
+"tests/**/*" = ["PLR2004", "S101", "TID252"]
