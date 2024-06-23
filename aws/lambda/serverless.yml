@@ -25,7 +25,7 @@ functions:
     url:
       cors:
         allowedMethods: [GET]
-        allowedOrigins: [https://guillem96.github.io]
+        allowedOrigins: [https://guillem96.github.io, "http://localhost"]
     timeout: 2
     environment:
       CACHE_DIR: /tmp

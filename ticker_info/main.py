@@ -1,6 +1,6 @@
 import datetime
 from pathlib import Path
-from typing import Literal
+from typing import Literal, Optional
 
 import pydantic
 import pydantic_settings
@@ -19,13 +19,17 @@ class Settings(pydantic_settings.BaseSettings):
 
 class TickerInfo(pydantic.BaseModel):
     price: float
+    name: str
+    ticker: str
     dividend_yield: float
+    website: Optional[str]
     currency: Literal["EUR", "USD", "GBp"]
     ex_dividend_date: datetime.date
     earning_dates: list[datetime.datetime]
     sector: str
     country: str
     industry: str
+    is_etf: bool
 
 
 class TickerNotFoundError(Exception):
@@ -64,12 +68,17 @@ def _get_ticker_info(ticker: str) -> TickerInfo:
     calendar = yf_ticker.get_calendar()
 
     return TickerInfo(
-        price=info["currentPrice"],
-        dividend_yield=info["dividendYield"],
+        name=info.get("shortName", ""),
+        ticker=ticker,
+        price=info.get("currentPrice") or info["navPrice"],
+        dividend_yield=info.get("dividendYield")
+        or info["trailingAnnualDividendYield"],
         currency=info["currency"],
-        sector=info["sectorDisp"],
-        earning_dates=calendar["Earnings Date"],
+        sector=info.get("sectorDisp", ""),
+        earning_dates=calendar.get("Earnings Date", []),
+        website=info.get("website"),
         country=info["country"],
-        industry=info["industryDisp"],
+        industry=info.get("industryDisp", ""),
+        is_etf=info.get("quoteType") == "ETF",
         ex_dividend_date=datetime.date.fromtimestamp(info["exDividendDate"]),  # noqa: DTZ012
     )
