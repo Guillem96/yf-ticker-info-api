@@ -1,6 +1,5 @@
 name: Deploy
 
-
 on:
   workflow_run:
     workflows: ["Test and Lint Python"]
@@ -13,7 +12,6 @@ jobs:
     runs-on: ubuntu-latest
     if: ${{ github.event.workflow_run.conclusion == 'success' }}
     steps:
-       steps:
       - uses: actions/checkout@v3
       - name: Set up Python 3.9
         uses: actions/setup-python@v4
