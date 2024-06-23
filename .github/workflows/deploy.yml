@@ -27,6 +27,6 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: eu-west-2
       - name: Install packages
-        run: cd aws/lambda && npm install
+        run: cd aws/lambda && npm install -g serverless && npm install
       - name: Deploy api
-        run: cd aws/lambda && npx run sls deploy --debug
+        run: cd aws/lambda && serverless deploy --debug
