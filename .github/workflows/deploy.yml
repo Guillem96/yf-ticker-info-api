@@ -26,7 +26,11 @@ jobs:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: eu-west-2
-      - name: Install packages
-        run: cd aws/lambda && npm install -g serverless && npm install
-      - name: Deploy api
-        run: cd aws/lambda && serverless deploy --debug
+      - name: Install Plugin and Deploy
+        uses: serverless/github-action@v3.2
+        with:
+          args: -c "cd ./aws/lambda serverless plugin install --name serverless-python-requirements && serverless deploy"
+          entrypoint: /bin/sh
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
