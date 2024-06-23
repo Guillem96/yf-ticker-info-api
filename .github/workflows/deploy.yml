@@ -29,4 +29,4 @@ jobs:
       - name: Install packages
         run: cd aws/lambda && npm install
       - name: Deploy api
-        run: cd aws/lambda && node_modules/.bin/serverless deploy --debug
+        run: cd aws/lambda && node_modules/.bin/serverless deploy
