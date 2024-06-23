@@ -25,6 +25,7 @@ class TickerInfo(pydantic.BaseModel):
     earning_dates: list[datetime.datetime]
     sector: str
     country: str
+    industry: str
 
 
 class TickerNotFoundError(Exception):
@@ -69,5 +70,6 @@ def _get_ticker_info(ticker: str) -> TickerInfo:
         sector=info["sectorDisp"],
         earning_dates=calendar["Earnings Date"],
         country=info["country"],
+        industry=info["industryDisp"],
         ex_dividend_date=datetime.date.fromtimestamp(info["exDividendDate"]),  # noqa: DTZ012
     )

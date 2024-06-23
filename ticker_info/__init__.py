@@ -1,1 +1,1 @@
-from .main import app
+from ticker_info.main import app

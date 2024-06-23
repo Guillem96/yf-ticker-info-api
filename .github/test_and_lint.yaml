@@ -1,0 +1,26 @@
+name: Test and Lint Python
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  linting_and_testing:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Python 3.9
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.9"
+      - name: Install and configure Poetry
+        uses: snok/install-poetry@v1
+        with:
+          virtualenvs-create: false
+      - name: Installing dependencies
+        run: poetry install --with dev --no-root
+      - name: Ruff Check
+        run: poetry run ruff check ticker_info
+      - name: Run pytest
+        run: poetry run pytest
