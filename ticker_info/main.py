@@ -70,13 +70,9 @@ def _get_ticker_info(ticker: str) -> TickerInfo:
     price = info.get("currentPrice") or info["navPrice"]
 
     try:
-        next_dividend_yield = round(
-            info.get("lastDividendValue", info["trailingAnnualDividendRate"])
-            / price,
-            3,
-        )
+        next_dividend_yield = round(info["lastDividendValue"] / price, 3)
     except KeyError:
-        next_dividend_yield = info.get("dividendYield", 0)
+        next_dividend_yield = info["trailingAnnualDividendRate"] / price
 
     return TickerInfo(
         name=info.get("shortName", ""),
