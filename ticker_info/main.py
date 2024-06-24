@@ -21,7 +21,8 @@ class TickerInfo(pydantic.BaseModel):
     price: float
     name: str
     ticker: str
-    dividend_yield: float
+    yearly_dividend_yield: Optional[float]
+    next_dividend_yield: float
     website: Optional[str]
     currency: Literal["EUR", "USD", "GBp"]
     ex_dividend_date: Optional[datetime.date]
@@ -66,13 +67,14 @@ def _get_ticker_info(ticker: str) -> TickerInfo:
         raise TickerNotFoundError(ticker)
 
     calendar = yf_ticker.get_calendar()
-    print(info)
     return TickerInfo(
         name=info.get("shortName", ""),
         ticker=ticker,
         price=info.get("currentPrice") or info["navPrice"],
-        dividend_yield=info.get("dividendYield")
-        or info["trailingAnnualDividendYield"],
+        yearly_dividend_yield=info.get("dividendYield"),
+        next_dividend_yield=(
+            info.get("trailingAnnualDividendYield") or info["dividendYield"]
+        ),
         currency=info["currency"],
         sector=info.get("sectorDisp", ""),
         earning_dates=calendar.get("Earnings Date", []),

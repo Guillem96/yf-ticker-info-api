@@ -11,3 +11,9 @@ def test_ticker_not_found(fastapi_test_client: TestClient) -> None:
 def test_valid_eur_ticker(fastapi_test_client: TestClient, ticker: str) -> None:
     res = fastapi_test_client.get(f"/{ticker}")
     assert res.json()["currency"] == "EUR"
+
+
+@pytest.mark.parametrize("ticker", ["IEMG"])
+def test_valid_etfs(fastapi_test_client: TestClient, ticker: str) -> None:
+    res = fastapi_test_client.get(f"/{ticker}")
+    assert res.json()["is_etf"]
