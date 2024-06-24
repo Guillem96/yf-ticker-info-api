@@ -67,14 +67,13 @@ def _get_ticker_info(ticker: str) -> TickerInfo:
         raise TickerNotFoundError(ticker)
 
     calendar = yf_ticker.get_calendar()
+    price = info.get("currentPrice") or info["navPrice"]
     return TickerInfo(
         name=info.get("shortName", ""),
         ticker=ticker,
-        price=info.get("currentPrice") or info["navPrice"],
+        price=price,
         yearly_dividend_yield=info.get("dividendYield"),
-        next_dividend_yield=(
-            info.get("trailingAnnualDividendYield") or info["dividendYield"]
-        ),
+        next_dividend_yield=round(info["lastDividendValue"] / price, 3),
         currency=info["currency"],
         sector=info.get("sectorDisp", ""),
         earning_dates=calendar.get("Earnings Date", []),
