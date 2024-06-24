@@ -73,7 +73,11 @@ def _get_ticker_info(ticker: str) -> TickerInfo:
         ticker=ticker,
         price=price,
         yearly_dividend_yield=info.get("dividendYield"),
-        next_dividend_yield=round(info["lastDividendValue"] / price, 3),
+        next_dividend_yield=round(
+            info.get("lastDividendValue", info["trailingAnnualDividendRate"])
+            / price,
+            3,
+        ),
         currency=info["currency"],
         sector=info.get("sectorDisp", ""),
         earning_dates=calendar.get("Earnings Date", []),
