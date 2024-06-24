@@ -68,16 +68,22 @@ def _get_ticker_info(ticker: str) -> TickerInfo:
 
     calendar = yf_ticker.get_calendar()
     price = info.get("currentPrice") or info["navPrice"]
+
+    try:
+        next_dividend_yield = round(
+            info.get("lastDividendValue", info["trailingAnnualDividendRate"])
+            / price,
+            3,
+        )
+    except KeyError:
+        next_dividend_yield = info.get("dividendYield", 0)
+
     return TickerInfo(
         name=info.get("shortName", ""),
         ticker=ticker,
         price=price,
         yearly_dividend_yield=info.get("dividendYield"),
-        next_dividend_yield=round(
-            info.get("lastDividendValue", info["trailingAnnualDividendRate"])
-            / price,
-            3,
-        ),
+        next_dividend_yield=next_dividend_yield,
         currency=info["currency"],
         sector=info.get("sectorDisp", ""),
         earning_dates=calendar.get("Earnings Date", []),
