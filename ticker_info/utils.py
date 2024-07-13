@@ -1,21 +1,25 @@
 import functools
 import hashlib
-import os
 import pickle
 import time
 from pathlib import Path
 from typing import Any, Callable, Optional, TypeVar, Union
 
+from s3pathlib import S3Path
+
 T = TypeVar("T")
 
 
 def cache_to_file(
-    base_dir: Union[str, Path] = ".",
+    base_dir: Union[str, Path, S3Path] = ".",
     ttl: Optional[int] = None,
     *,
     disable: bool = False,
 ) -> Callable[[Callable[..., T]], Callable[..., T]]:
-    base_dir = Path(base_dir)
+    if isinstance(base_dir, str):
+        base_dir = (
+            S3Path(base_dir) if base_dir.startswith("s3://") else Path(base_dir)
+        )
 
     def decorator(func: Callable[..., T]) -> Callable[..., T]:
         if disable:
@@ -27,7 +31,8 @@ def cache_to_file(
 
         @functools.wraps(func)
         def wrapper(*args, **kwargs) -> Any:
-            base_dir.mkdir(exist_ok=True, parents=True)
+            if not isinstance(base_dir, S3Path):
+                base_dir.mkdir(exist_ok=True, parents=True)
 
             # Generate the cache file path
             cache_key = generate_cache_key(*args, **kwargs)

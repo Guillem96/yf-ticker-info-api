@@ -7,7 +7,7 @@ from ticker_info.utils import cache_to_file
 
 
 def test_disk_cache(tmpdir: path.local) -> None:
-    @cache_to_file(tmpdir)
+    @cache_to_file(str(tmpdir))
     def inspector() -> float:
         return random.random()  # noqa: S311
 
@@ -16,7 +16,7 @@ def test_disk_cache(tmpdir: path.local) -> None:
 
 
 def test_disk_cache_ttl(tmpdir: path.local) -> None:
-    @cache_to_file(tmpdir, ttl=1)
+    @cache_to_file(str(tmpdir), ttl=1)
     def inspector() -> float:
         return random.random()  # noqa: S311
 

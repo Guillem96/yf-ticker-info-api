@@ -5,6 +5,18 @@ provider:
   runtime: python3.9
   region: eu-west-2
   versionFunctions: false
+  iam:
+    role:
+      name: "ticker-info-api-role"
+      statements:
+        - Effect: Allow
+          Action:
+            - s3:List*
+            - s3:Get*
+            - s3:PutObject
+          Resource:
+            - Fn::Sub: ${CacheS3Bucket.Arn}
+            - Fn::Sub: ${CacheS3Bucket.Arn}/*
 
 plugins:
   - serverless-python-requirements
@@ -13,6 +25,8 @@ custom:
   pythonRequirements:
     dockerizePip: non-linux
     layer: true
+  accountId:
+    Fn::Sub: "${AWS::AccountId}"
 
 package:
   patterns:
@@ -22,12 +36,28 @@ package:
 functions:
   tickerInfo:
     handler: handler.handler
+    environment:
+      CACHE_DIR:
+        Fn::Sub: "s3://ticker-info-api-${AWS::Region}-${AWS::AccountId}-cache"
+      CACHE_TTL: "172800" # 2 days
     url:
       cors:
         allowedMethods: [GET]
         allowedOrigins: [https://guillem96.github.io, "http://localhost"]
-    timeout: 2
-    environment:
-      CACHE_DIR: /tmp
+    timeout: 20
     layers:
       - Ref: PythonRequirementsLambdaLayer
+
+resources:
+  Resources:
+    CacheS3Bucket:
+      Type: AWS::S3::Bucket
+      Properties:
+        BucketName:
+          Fn::Sub: ticker-info-api-${AWS::Region}-${AWS::AccountId}-cache
+        LifecycleConfiguration:
+          Rules:
+            - Id: RemoveAllObjects
+              Status: Enabled
+              ExpirationInDays: 30
+        AccessControl: Private

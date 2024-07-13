@@ -13,8 +13,9 @@ from ticker_info import utils
 
 
 class Settings(pydantic_settings.BaseSettings):
-    cache_dir: Path = Path(".cache")
+    cache_dir: str = ".cache"
     cache_disabled: bool = False
+    cache_ttl: int = 60 * 60 * 24  # Day in seconds
 
 
 class TickerInfo(pydantic.BaseModel):
@@ -57,7 +58,7 @@ async def ticker_not_found_err_handler(
 
 @utils.cache_to_file(
     base_dir=settings.cache_dir,
-    ttl=60 * 60 * 24,  # Day in seconds
+    ttl=settings.cache_ttl,
     disable=settings.cache_disabled,
 )
 def _get_ticker_info(ticker: str) -> TickerInfo:
