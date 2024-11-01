@@ -1,5 +1,5 @@
+import concurrent.futures
 import datetime
-from pathlib import Path
 from typing import Literal, Optional
 
 import pydantic
@@ -44,7 +44,11 @@ settings = Settings()
 
 
 @app.get("/{ticker}")
-def get_ticker_info(ticker: str) -> TickerInfo:
+def get_ticker_info(ticker: str) -> TickerInfo | list[TickerInfo]:
+    if "," in ticker:
+        with concurrent.futures.ThreadPoolExecutor() as executor:
+            return list(executor.map(_get_ticker_info, ticker.split(",")))
+
     return _get_ticker_info(ticker)
 
 
