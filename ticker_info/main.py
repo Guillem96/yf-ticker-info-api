@@ -1,6 +1,6 @@
 import concurrent.futures
 import datetime
-from typing import Literal, Optional
+from typing import Literal, Optional, Union
 
 import pydantic
 import pydantic_settings
@@ -44,7 +44,7 @@ settings = Settings()
 
 
 @app.get("/{ticker}")
-def get_ticker_info(ticker: str) -> TickerInfo | list[TickerInfo]:
+def get_ticker_info(ticker: str) -> Union[TickerInfo, list[TickerInfo]]:
     if "," in ticker:
         with concurrent.futures.ThreadPoolExecutor() as executor:
             return list(executor.map(_get_ticker_info, ticker.split(",")))
