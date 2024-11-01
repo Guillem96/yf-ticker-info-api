@@ -17,3 +17,12 @@ def test_valid_eur_ticker(fastapi_test_client: TestClient, ticker: str) -> None:
 def test_valid_etfs(fastapi_test_client: TestClient, ticker: str) -> None:
     res = fastapi_test_client.get(f"/{ticker}")
     assert res.json()["is_etf"]
+
+
+@pytest.mark.parametrize("tickers", [["TEF.MC", "COL.MC"], ["SAN.MC", "HSY", "AAPL"]])
+def test_valid_multiple_tickers(fastapi_test_client: TestClient, tickers: list[str],) -> None:
+    ts = ",".join(tickers)
+    res = fastapi_test_client.get(f"/{ts}")
+    res_content = res.json()
+    assert len(res_content) == len(tickers)
+    assert all(t["ticker"] == tr for t, tr in zip(res_content, tickers))
