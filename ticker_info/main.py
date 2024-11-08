@@ -24,6 +24,8 @@ class TickerInfo(pydantic.BaseModel):
     ticker: str
     yearly_dividend_yield: Optional[float]
     next_dividend_yield: float
+    yearly_dividend_value: Optional[float]
+    next_dividend_value: Optional[float]
     website: Optional[str]
     currency: Literal["EUR", "USD", "GBp"]
     ex_dividend_date: Optional[datetime.date]
@@ -84,6 +86,8 @@ def _get_ticker_info(ticker: str) -> TickerInfo:
         ticker=ticker,
         price=price,
         yearly_dividend_yield=info.get("dividendYield"),
+        yearly_dividend_value=info.get("dividendRate"),
+        next_dividend_value=info.get("lastDividendValue"),
         next_dividend_yield=next_dividend_yield,
         currency=info["currency"],
         sector=info.get("sectorDisp", ""),
