@@ -6,6 +6,7 @@ import pydantic
 import pydantic_settings
 import yfinance as yf  # type: ignore
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.requests import Request
 from fastapi.responses import JSONResponse
 
@@ -43,6 +44,13 @@ class TickerNotFoundError(Exception):
 
 app = FastAPI()
 settings = Settings()
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 
 @app.get("/{ticker}")

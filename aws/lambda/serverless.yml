@@ -40,10 +40,7 @@ functions:
       CACHE_DIR:
         Fn::Sub: "s3://ticker-info-api-${AWS::Region}-${AWS::AccountId}-cache"
       CACHE_TTL: "172800" # 2 days
-    url:
-      cors:
-        allowedMethods: [GET]
-        allowedOrigins: [https://guillem96.github.io, "http://localhost"]
+    url: true
     timeout: 20
     layers:
       - Ref: PythonRequirementsLambdaLayer
