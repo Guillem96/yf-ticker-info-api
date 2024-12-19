@@ -39,7 +39,7 @@ functions:
     environment:
       CACHE_DIR:
         Fn::Sub: "s3://ticker-info-api-${AWS::Region}-${AWS::AccountId}-cache"
-      CACHE_TTL: "172800" # 2 days
+      CACHE_TTL: "21600" # 6 hours
     url: true
     timeout: 20
     layers:
