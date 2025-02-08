@@ -21,7 +21,7 @@ python = ">=3.9,<4.0"
 fastapi = "*"
 pydantic = "*"
 pydantic-settings = "*"
-yfinance = "^0.2.40"
+yfinance = "^0.2.52"
 urllib3 = "<2"          # workaround for botocore
 s3pathlib = "^2.1.2"
 
@@ -64,9 +64,6 @@ unfixable = []
 
 [tool.ruff.lint.isort]
 known-first-party = ["ticker_info"]
-
-[tool.ruff.lint.flake8-tidy-imports]
-ban-relative-imports = "all"
 
 [tool.ruff.lint.per-file-ignores]
 # Tests can use magic values, assertions, and relative imports

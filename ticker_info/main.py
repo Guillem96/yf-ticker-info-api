@@ -16,7 +16,12 @@ from ticker_info import utils
 class Settings(pydantic_settings.BaseSettings):
     cache_dir: str = ".cache"
     cache_disabled: bool = False
-    cache_ttl: int = 60 * 60 * 24  # Day in seconds
+    cache_ttl: int = 3600
+
+
+class PriceRange(pydantic.BaseModel):
+    high: float
+    low: float
 
 
 class TickerInfo(pydantic.BaseModel):
@@ -35,6 +40,8 @@ class TickerInfo(pydantic.BaseModel):
     country: str
     industry: str
     is_etf: bool
+    monthly_price_range: PriceRange
+    yearly_price_range: PriceRange
 
 
 class TickerNotFoundError(Exception):
@@ -62,6 +69,16 @@ def get_ticker_info(ticker: str) -> Union[TickerInfo, list[TickerInfo]]:
     return _get_ticker_info(ticker)
 
 
+@app.get("/{ticker}/history")
+def get_ticker_history(
+    ticker: str,
+    start: datetime.datetime,
+    end: datetime.datetime,
+) -> list[float]:
+    yf_ticker = yf.Ticker(ticker)
+    return yf_ticker.history(start=start, end=end)["Close"].tolist()
+
+
 @app.exception_handler(TickerNotFoundError)
 async def ticker_not_found_err_handler(
     _: Request,
@@ -81,13 +98,18 @@ def _get_ticker_info(ticker: str) -> TickerInfo:
     if info == {"trailingPegRatio": None}:
         raise TickerNotFoundError(ticker)
 
-    calendar = yf_ticker.get_calendar()
     price = info.get("currentPrice") or info["navPrice"]
+    yearly_price_range, monthly_price_range = _get_price_range(yf_ticker)
 
     try:
         next_dividend_yield = round(info["lastDividendValue"] / price, 3)
     except KeyError:
         next_dividend_yield = info["trailingAnnualDividendRate"] / price
+
+    if info.get("quoteType") == "ETF":
+        earning_dates = []
+    else:
+        earning_dates = _get_earning_dates(yf_ticker)
 
     return TickerInfo(
         name=info.get("shortName", ""),
@@ -99,12 +121,46 @@ def _get_ticker_info(ticker: str) -> TickerInfo:
         next_dividend_yield=next_dividend_yield,
         currency=info["currency"],
         sector=info.get("sectorDisp", ""),
-        earning_dates=calendar.get("Earnings Date", []),
+        earning_dates=earning_dates,
         website=info.get("website"),
         country=info.get("country", ""),
         industry=info.get("industryDisp", ""),
         is_etf=info.get("quoteType") == "ETF",
-        ex_dividend_date=datetime.date.fromtimestamp(info["exDividendDate"])  # noqa: DTZ012
-        if "exDividendDate" in info
-        else None,
+        ex_dividend_date=(
+            datetime.date.fromtimestamp(info["exDividendDate"])  # noqa: DTZ012
+            if "exDividendDate" in info
+            else None
+        ),
+        monthly_price_range=monthly_price_range,
+        yearly_price_range=yearly_price_range,
+    )
+
+
+def _get_earning_dates(ticker: yf.Ticker) -> list[datetime.datetime]:
+    earning_dates_df = ticker.get_earnings_dates()
+    return [o.to_pydatetime().date() for o in earning_dates_df.index.tolist()]
+
+
+def _get_price_range(ticker: yf.Ticker) -> tuple[PriceRange, PriceRange]:
+    today = datetime.datetime.now()
+    one_month_ago = today - datetime.timedelta(days=30)
+    one_year_ago = today - datetime.timedelta(days=365)
+
+    # Get yearly data
+    yearly_data = ticker.history(start=one_year_ago, end=today)
+
+    # Remove timezone information from index
+    yearly_data.index = yearly_data.index.tz_localize(None)
+
+    # Filter last month from yearly data
+    monthly_data = yearly_data[yearly_data.index >= one_month_ago]
+    monthly_high = monthly_data["High"].max()
+    monthly_low = monthly_data["Low"].min()
+
+    # Calculate yearly highs/lows
+    yearly_high = yearly_data["High"].max()
+    yearly_low = yearly_data["Low"].min()
+
+    return PriceRange(high=yearly_high, low=yearly_low), PriceRange(
+        high=monthly_high, low=monthly_low
     )
