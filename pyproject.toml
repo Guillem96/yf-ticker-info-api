@@ -39,6 +39,9 @@ optional = true
 
 [tool.poetry.group.lambda.dependencies]
 mangum = "*"
+lxml = "^5.3.0"
+cryptography = "3.4.8"
+bcrypt = "3.2.2"
 
 [tool.black]
 target-version = ["py39"]
