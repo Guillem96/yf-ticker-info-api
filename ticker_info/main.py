@@ -26,6 +26,7 @@ class PriceRange(pydantic.BaseModel):
 
 class TickerInfo(pydantic.BaseModel):
     price: float
+    change_rate: float
     name: str
     ticker: str
     yearly_dividend_yield: Optional[float]
@@ -99,6 +100,8 @@ def _get_ticker_info(ticker: str) -> TickerInfo:
         raise TickerNotFoundError(ticker)
 
     price = info.get("currentPrice") or info["navPrice"]
+    change_rate = (price - info["previousClose"]) / info["previousClose"]
+
     yearly_price_range, monthly_price_range = _get_price_range(yf_ticker)
 
     try:
@@ -115,6 +118,7 @@ def _get_ticker_info(ticker: str) -> TickerInfo:
         name=info.get("shortName", ""),
         ticker=ticker,
         price=price,
+        change_rate=change_rate,
         yearly_dividend_yield=info.get("dividendYield"),
         yearly_dividend_value=info.get("dividendRate"),
         next_dividend_value=info.get("lastDividendValue"),
