@@ -140,7 +140,11 @@ def _get_ticker_info(
     history_end: Optional[datetime.datetime] = None,
 ) -> TickerInfo:
     yf_ticker = yf.Ticker(ticker)
-    info = yf_ticker.get_info()
+    try:
+        info = yf_ticker.get_info()
+    except AttributeError:
+        raise TickerNotFoundError(ticker)
+
     if info == {"trailingPegRatio": None}:
         raise TickerNotFoundError(ticker)
 
