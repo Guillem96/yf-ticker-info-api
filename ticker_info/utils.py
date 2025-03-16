@@ -26,8 +26,12 @@ def cache_to_file(
             return func
 
         def generate_cache_key(*args, **kwargs) -> str:
-            key = (func.__name__, args, frozenset(kwargs.items()))
-            return hashlib.md5(pickle.dumps(key)).hexdigest()  # noqa: S324
+            key = f"{func.__name__}:{','.join(map(str, args))}"
+            if kwargs:
+                key += ":" + ",".join(
+                    f"{k}={v}" for k, v in sorted(kwargs.items())
+                )
+            return hashlib.md5(key.encode()).hexdigest()  # noqa: S324
 
         @functools.wraps(func)
         def wrapper(*args, **kwargs) -> Any:
@@ -40,7 +44,9 @@ def cache_to_file(
 
             # Check if the cache file exists and if it is still valid
             if cache_file.exists():
-                time_, cached = pickle.loads(cache_file.read_bytes())  # noqa: S301
+                time_, cached = pickle.loads(
+                    cache_file.read_bytes()
+                )  # noqa: S301
                 if ttl is None:
                     return cached
 

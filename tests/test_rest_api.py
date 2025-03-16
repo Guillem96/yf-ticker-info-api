@@ -32,3 +32,21 @@ def test_valid_multiple_tickers(
     res_content = res.json()
     assert len(res_content) == len(tickers)
     assert all(t["ticker"] == tr for t, tr in zip(res_content, tickers))
+
+
+@pytest.mark.parametrize(
+    "tickers",
+    [["TEF.MC", "COL.MC"], ["SAN.MC", "HSY", "AAPL"]],
+)
+def test_valid_multiple_tickers_with_history(
+    fastapi_test_client: TestClient,
+    tickers: list[str],
+) -> None:
+    ts = ",".join(tickers)
+    res = fastapi_test_client.get(
+        f"/{ts}?history_resample=month&history_start=2024-01-01&history_end=2024-12-31"
+    )
+    res_content = res.json()
+    assert len(res_content) == len(tickers)
+    assert all(t["ticker"] == tr for t, tr in zip(res_content, tickers))
+    assert all(len(t["historical_data"]) == 12 for t in res_content)
