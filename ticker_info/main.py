@@ -157,7 +157,13 @@ def _get_ticker_info(
     try:
         next_dividend_yield = round(info["lastDividendValue"] / price, 3)
     except KeyError:
-        next_dividend_yield = info["trailingAnnualDividendRate"] / price
+        next_dividend_yield = round(
+            info["trailingAnnualDividendRate"] / price, 3
+        )
+
+    yearly_dividend_yield = round(
+        info["trailingAnnualDividendYield"] / price, 3
+    )
 
     if info.get("quoteType") == "ETF":
         earning_dates = []
@@ -180,8 +186,8 @@ def _get_ticker_info(
         ticker=ticker,
         price=price,
         change_rate=change_rate,
-        yearly_dividend_yield=info.get("dividendYield"),
-        yearly_dividend_value=info.get("dividendRate"),
+        yearly_dividend_yield=yearly_dividend_yield,
+        yearly_dividend_value=info.get("trailingAnnualDividendRate"),
         next_dividend_value=info.get("lastDividendValue"),
         next_dividend_yield=next_dividend_yield,
         currency=info["currency"],
