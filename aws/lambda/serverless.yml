@@ -2,7 +2,7 @@ service: ticker-info-api
 
 provider:
   name: aws
-  runtime: python3.9
+  runtime: python3.12
   region: eu-west-2
   versionFunctions: false
   iam:
