@@ -14,6 +14,7 @@ from fastapi.requests import Request
 from fastapi.responses import JSONResponse
 
 from ticker_info import utils
+from curl_cffi.requests.exceptions import HTTPError
 
 
 class Settings(pydantic_settings.BaseSettings):
@@ -105,9 +106,7 @@ def get_ticker_info(
         with concurrent.futures.ThreadPoolExecutor() as executor:
             return list(executor.map(lambda x: _get_ticker_info(*x), it))
 
-    return _get_ticker_info(
-        ticker, history_resample, history_start, history_end
-    )
+    return _get_ticker_info(ticker, history_resample, history_start, history_end)
 
 
 @app.get("/{ticker}/history")
@@ -142,7 +141,7 @@ def _get_ticker_info(
     yf_ticker = yf.Ticker(ticker)
     try:
         info = yf_ticker.get_info()
-    except AttributeError:
+    except (AttributeError, HTTPError):
         raise TickerNotFoundError(ticker)
 
     if info == {"trailingPegRatio": None}:
@@ -150,20 +149,20 @@ def _get_ticker_info(
 
     price = info.get("currentPrice") or info["navPrice"]
     change_rate = (price - info["previousClose"]) / info["previousClose"] * 100
-    calendar = yf_ticker.get_calendar()
-    payment_date = calendar.get("Dividend Date")
+    try:
+        calendar = yf_ticker.get_calendar()
+        payment_date = calendar.get("Dividend Date")
+    except (AttributeError, HTTPError):
+        payment_date = None
+
     yearly_price_range, monthly_price_range = _get_price_range(yf_ticker)
 
     try:
         next_dividend_yield = round(info["lastDividendValue"] / price, 3)
     except KeyError:
-        next_dividend_yield = round(
-            info["trailingAnnualDividendRate"] / price, 3
-        )
+        next_dividend_yield = round(info["trailingAnnualDividendRate"] / price, 3)
 
-    yearly_dividend_yield = round(
-        info["trailingAnnualDividendYield"] / price, 3
-    )
+    yearly_dividend_yield = round(info["trailingAnnualDividendYield"] / price, 3)
 
     if info.get("quoteType") == "ETF":
         earning_dates = []
