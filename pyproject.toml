@@ -21,7 +21,7 @@ python = ">=3.9,<4.0"
 fastapi = "*"
 pydantic = "*"
 pydantic-settings = "*"
-yfinance = "^0.2.54"
+yfinance = "^0.2.59"
 urllib3 = "<2"          # workaround for botocore
 s3pathlib = "^2.1.2"
 httpx = "^0.28.1"
@@ -42,11 +42,6 @@ mangum = "*"
 lxml = "^5.3.0"
 cryptography = "3.4.8"
 bcrypt = "3.2.2"
-
-[tool.black]
-target-version = ["py39"]
-line-length = 80
-skip-string-normalization = true
 
 [[tool.mypy.overrides]]
 module = ["py.*", "s3pathlib.*"]
