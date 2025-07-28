@@ -164,6 +164,8 @@ def _get_ticker_info(
 
     try:
         yearly_dividend_yield = info["dividendYield"]
+        if yearly_dividend_yield > 1.0:
+            yearly_dividend_yield = yearly_dividend_yield / 100
         yearly_dividend_value = round(yearly_dividend_yield * price, 3)
     except KeyError:
         yearly_dividend_yield = round(info["trailingAnnualDividendYield"] / price, 3)
