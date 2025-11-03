@@ -4,6 +4,7 @@ import enum
 from itertools import repeat
 import pandas as pd
 from typing import Literal, Optional, Union
+import logging
 
 import pydantic
 import pydantic_settings
@@ -21,6 +22,7 @@ class Settings(pydantic_settings.BaseSettings):
     cache_dir: str = ".cache"
     cache_disabled: bool = False
     cache_ttl: int = 3600
+    log_level: str = "DEBUG"
 
 
 class PriceRange(pydantic.BaseModel):
@@ -64,6 +66,14 @@ class TickerNotFoundError(Exception):
 app = FastAPI()
 settings = Settings()
 
+logger = logging.getLogger(__name__)
+logger.setLevel(settings.log_level)
+ch = logging.StreamHandler()
+ch.setLevel(settings.log_level)
+
+formatter = logging.Formatter(
+    "[%(filename)s:%(lineno)d | %(levelname)s] %(message)s"
+)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -105,7 +115,7 @@ def get_ticker_info(
         )
         with concurrent.futures.ThreadPoolExecutor() as executor:
             tickers = list(executor.map(lambda x: _get_ticker_info(*x), it))
-            print(tickers)
+            logger.debug(tickers)
             return tickers
     return _get_ticker_info(
         ticker, history_resample, history_start, history_end
