@@ -285,10 +285,15 @@ def _get_historical_data(
     end: datetime.datetime,
 ) -> list[HistoricalEntry]:
     data = ticker.history(start=start, end=end)
+    # TODO: Think of a better fillna strategy
     if resample == HistoryResample.month:
         return [
             HistoricalEntry(date=date, price=price)
-            for date, price in data["Close"].resample("MS").first().items()
+            for date, price in data["Close"]
+            .resample("MS")
+            .first()
+            .fillna()
+            .items()
         ]
     elif resample == HistoryResample.year:
         return [
