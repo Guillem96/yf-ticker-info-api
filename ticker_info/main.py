@@ -66,14 +66,17 @@ class TickerNotFoundError(Exception):
 app = FastAPI()
 settings = Settings()
 
+# Logging Setup
 logger = logging.getLogger(__name__)
 logger.setLevel(settings.log_level)
 ch = logging.StreamHandler()
 ch.setLevel(settings.log_level)
-
 formatter = logging.Formatter(
     "[%(filename)s:%(lineno)d | %(levelname)s] %(message)s"
 )
+ch.setFormatter(formatter)
+logger.addHandler(ch)
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
