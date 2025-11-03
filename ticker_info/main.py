@@ -98,6 +98,9 @@ def get_ticker_info(
     history_start: Optional[datetime.datetime] = None,
     history_end: Optional[datetime.datetime] = None,
 ) -> Union[TickerInfo, list[TickerInfo]]:
+    logger.info(f"Requesting tickers: {ticker}")
+    logger.info(f"History: {history_resample} {history_start} {history_end}")
+
     history_end = history_end or datetime.datetime.now()
 
     is_any_provided = history_resample is not None or history_start is not None
@@ -120,6 +123,7 @@ def get_ticker_info(
             tickers = list(executor.map(lambda x: _get_ticker_info(*x), it))
             logger.debug(tickers)
             return tickers
+
     return _get_ticker_info(
         ticker, history_resample, history_start, history_end
     )
@@ -158,9 +162,11 @@ def _get_ticker_info(
     try:
         info = yf_ticker.get_info()
     except (AttributeError, HTTPError):
+        logger.error(f"HTTP Error from yf package: {ticker}")
         raise TickerNotFoundError(ticker)
 
     if info == {"trailingPegRatio": None}:
+        logger.error(f"Retrieved invalid info for {ticker} ticker")
         raise TickerNotFoundError(ticker)
 
     price = info.get("currentPrice") or info["navPrice"]
