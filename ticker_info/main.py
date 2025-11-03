@@ -292,7 +292,7 @@ def _get_historical_data(
             for date, price in data["Close"]
             .resample("MS")
             .first()
-            .fillna()
+            .ffill()
             .items()
         ]
     elif resample == HistoryResample.year:
