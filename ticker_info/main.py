@@ -104,9 +104,12 @@ def get_ticker_info(
             repeat(history_end),
         )
         with concurrent.futures.ThreadPoolExecutor() as executor:
-            return list(executor.map(lambda x: _get_ticker_info(*x), it))
-
-    return _get_ticker_info(ticker, history_resample, history_start, history_end)
+            tickers = list(executor.map(lambda x: _get_ticker_info(*x), it))
+            print(tickers)
+            return tickers
+    return _get_ticker_info(
+        ticker, history_resample, history_start, history_end
+    )
 
 
 @app.get("/{ticker}/history")
@@ -160,7 +163,9 @@ def _get_ticker_info(
     try:
         next_dividend_yield = round(info["lastDividendValue"] / price, 3)
     except KeyError:
-        next_dividend_yield = round(info["trailingAnnualDividendRate"] / price, 3)
+        next_dividend_yield = round(
+            info["trailingAnnualDividendRate"] / price, 3
+        )
 
     try:
         yearly_dividend_yield = info["dividendYield"]
@@ -172,7 +177,9 @@ def _get_ticker_info(
             yearly_dividend_value = yearly_dividend_value / 100
 
     except KeyError:
-        yearly_dividend_yield = round(info["trailingAnnualDividendYield"] / price, 3)
+        yearly_dividend_yield = round(
+            info["trailingAnnualDividendYield"] / price, 3
+        )
         yearly_dividend_value = info.get("trailingAnnualDividendRate")
 
     if info.get("quoteType") == "ETF":
