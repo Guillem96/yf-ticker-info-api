@@ -18,11 +18,11 @@ build-backend = "poetry.masonry.api"
 
 [tool.poetry.dependencies]
 python = ">=3.12,<4.0"
-fastapi = "*"
+fastapi = { extras = ["standard"], version = "*" }
 pydantic = "*"
 pydantic-settings = "*"
-yfinance = "^0.2.65"
-urllib3 = "<2"          # workaround for botocore
+yfinance = "^0.2.66"
+urllib3 = "<2"                                     # workaround for botocore
 s3pathlib = "^2.1.2"
 httpx = "^0.28.1"
 
